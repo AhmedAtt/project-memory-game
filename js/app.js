@@ -1,22 +1,27 @@
-//wait for the document to load
+//=========wait for the document to load=======================
 $(document).ready(function() {
 
+  $('.restart').click(function(event) {
+    location.reload();
+  });
+  //============================================================
   //list of all cards
   let cards = $('ul.deck li').siblings();
-  console.log(cards);
 
-  //function that starts and increments timer
+  //========function that starts and increments timer===========
+  let timerValue = 0;
+
   function timerStart() {
     let timeVal = parseInt($('.timer').text(), 10);
     value = 0;
     timerInterval = setInterval(function() {
       timeVal++;
+      timerValue = timeVal;
       $('span.timer').text(timeVal);
     }, 1000)
   }
-
-
-
+  //=============================================================
+  //=========Shuffle and redraw==================================
   /*
    * Display the cards on the page
    *   - shuffle the list of cards using the provided "shuffle" method below
@@ -41,10 +46,10 @@ $(document).ready(function() {
   }
   //call card shuffle and redraw
   shuffle(cards);
-  console.log(cards);
   //append cards after refresh
   $('ul.deck').append(cards);
-
+  //================================================================
+  //==========Game functionality===================================
   /*
    * set up the event listener for a card. If a card is clicked:
    *  - display the card's symbol (put this functionality in another function that you call from this one)
@@ -62,67 +67,79 @@ $(document).ready(function() {
   }
   //function to re-hide Card
   function closeCard(card) {
-    //Adding some delay before cloasing cards
-    var delayms=500;
+    //Adding some delay before closing cards
+    var delayms = 500;
     setTimeout(function() {
-    $(card).removeClass('open show');
-}, delayms);
+      $(card).removeClass('open show');
+    }, delayms);
 
   }
+  //Check if the samecard is clicked twice
+  function checkDoubleClick(card1, card2) {
+    el2=card1.get('0').getBoundingClientRect();
+    el1=card2.get('0').getBoundingClientRect();
+    if (parseInt(el1.left) ==parseInt(el2.left )&& parseInt(el1.top) == parseInt(el2.top)){
+      return true;
+    }
+    else {
+      return false;
+    }
+  }
 
-  let openCards = [];
   let secondClick = false;
   var firstCard;
   var secondCard;
-  var firstCall=true;
-  let moves=0;
-  let correctGuess=0;
+  var firstCall = true;
+  let moves = 0;
+  let correctGuess = 0;
+  let rating = 3;
+
   //First Button Click
-
-  $('.card').click(function(event) {
-
-    if(firstCall){
-
+  $(cards).click(function(event) {
+    //First key press
+    if (firstCall) {
       //fire the timer funciton on first call
       timerStart();
-      firstCall=false;
+      firstCall = false;
     }
-    if(secondClick ==false){
-
-      firstCard=$(this);
+    //check first click
+    if (secondClick == false) {
+      firstCard = $(this);
       openCard(firstCard);
-
-      secondClick=true;
-    }
-    else{
-
-      moves++;
-      if(moves > 8){
-        $('#firststar').remove();
-      }
-      if(moves > 16){
-        $('#secondstar').remove();
-      }
-
-      $('span.moves').text(moves);
-      secondCard=this;
+      secondClick = true;
+    } else {
+      secondCard = $(this);
       openCard(secondCard);
-      if($(firstCard).html() == $(secondCard).html()){
-        correctGuess++;
-        if(correctGuess == 8){
-
-          window.location.href='winner.html';
+      if (checkDoubleClick(firstCard, secondCard)) {
+        //Do nothing if clicking the same card
+      } else { // not clicking the same
+        moves++;
+        if (moves == 12) {
+          $('#firststar').remove();
+          rating--;
         }
+        if (moves == 19) {
+          $('#secondstar').remove();
+          rating--;
+        }
+        $('span.moves').text(moves);
+        if (firstCard.html() == secondCard.html()) {
+          correctGuess++;
+          if (correctGuess == 8) {
+            sessionStorage.setItem('rating', rating);
+            sessionStorage.setItem('time', timerValue);
+            window.location.href = 'winner.html';
+          }
+        } else {
+          closeCard(firstCard);
+          closeCard(secondCard);
+        }
+        secondClick = false;
+
       }
-      else{
-
-        closeCard(firstCard);
-        closeCard(secondCard);
-      }
-
-      secondClick =false;
-
     }
-    });
+
+  });
 
 });
+  
