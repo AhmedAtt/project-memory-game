@@ -5,3 +5,6 @@ for(var m=0; m<userRating; m++){
       console.log("YOU GOT STAR");
 }
 $('#user-time').text(userTime);
+$('#play-again').click(function (){
+  window.location.href='index.html';
+});
